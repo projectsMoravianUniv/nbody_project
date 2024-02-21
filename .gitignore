@@ -1,0 +1,9 @@
+*
+!.gitattributes
+!.gitignore
+!.gitkeep
+!*.md
+!*.c
+!*.h
+!*.txt
+!*/
