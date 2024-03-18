@@ -26,7 +26,7 @@
  * 
  * See the PDF for implementation details and other requirements.
  * 
- * AUTHORS:
+ * AUTHORS: Austin Leibensperger and Saul Sanchez
  */
 
 #include <stdbool.h>
@@ -40,11 +40,9 @@
 #include "matrix.h"
 #include "util.h"
 
-// Gravitational Constant in N m^2 / kg^2 or m^3 / kg / s^2
-#define G 6.6743015e-11
 
-// Softening factor to reduce divide-by-near-zero effects
-#define SOFTENING 1e-9
+#define BLOCK_SIZE 32
+#include "formulap3.h"
 
 
 int main(int argc, const char* argv[]) {
@@ -81,6 +79,71 @@ int main(int argc, const char* argv[]) {
     struct timespec start, end;
     clock_gettime(CLOCK_MONOTONIC, &start);
 
+    // inside main function, after the start clock
+    Positions* positions = (Positions*)malloc(n * 3 * sizeof(Positions));
+    Positions* velocities = (Positions*)malloc(n * 3 * sizeof(Positions));
+    double* forces = (double*)malloc(n * 3 * sizeof(double));
+    double* masses = (double*)malloc(n * sizeof(double));
+
+    // initialize positions, velocities, and masses
+    for (size_t i = 0; i < n; i++) {
+        masses[i] = MATRIX_AT(input, i, 0);
+        positions[i/BLOCK_SIZE * 3].x[i%BLOCK_SIZE] = MATRIX_AT(input, i, 1);
+        positions[i/BLOCK_SIZE * 3 + 1].y[i%BLOCK_SIZE] = MATRIX_AT(input, i, 2);
+        positions[i/BLOCK_SIZE * 3 + 2].z[i%BLOCK_SIZE] = MATRIX_AT(input, i, 3);
+        velocities[i/BLOCK_SIZE * 3].x[i%BLOCK_SIZE] = MATRIX_AT(input, i, 4);
+        velocities[i/BLOCK_SIZE * 3 + 1].y[i%BLOCK_SIZE] = MATRIX_AT(input, i, 5);
+        velocities[i/BLOCK_SIZE * 3 + 2].z[i%BLOCK_SIZE] = MATRIX_AT(input, i, 6);
+        forces[i * 3] = 0;
+        forces[i * 3 + 1] = 0;
+        forces[i * 3 + 2] = 0;
+    }
+
+    // create the output matrix
+
+    Matrix* output = matrix_create_raw(num_outputs, 3*n);
+
+    // save positions to row `0` of output
+    for (size_t i = 0; i < n; i++) {
+        MATRIX_AT(output, 0, i * 3 + 0) = MATRIX_AT(input, i, 1);
+        MATRIX_AT(output, 0, i * 3 + 1) = MATRIX_AT(input, i, 2);
+        MATRIX_AT(output, 0, i * 3 + 2) = MATRIX_AT(input, i, 3);
+    }
+
+    // run the simulation for each time step
+    #pragma omp parallel default(none) firstprivate(positions, velocities, masses, forces, n, output) shared(time_step, output_steps, num_steps) num_threads(num_threads)
+    for (size_t step = 1; step < num_steps; step++) {
+        // compute time step
+        calculateForces(forces, positions, masses, n);
+        calculateVelocities(velocities, forces, masses, n, time_step);
+        calculatePositions(positions, velocities, n, time_step);
+
+        //if (step % 8) {
+            //printf("%zu velocities: %g %g %g\n", step, velocities[0].x[1], velocities[1].y[1], velocities[2].z[1]);
+            //printf("%zu positions: %g %g %g\n", step, positions[0].x[1], positions[1].y[1], positions[2].z[1]);
+        //}
+        //if (step > 512) { break;}
+
+        // Periodically copy the positions to the output data
+        if (step % output_steps == 0) {
+            for (size_t i = 0; i < n; i++) {
+                MATRIX_AT(output, step / output_steps, i * 3 + 0) = positions[i/BLOCK_SIZE * 3].x[i%BLOCK_SIZE];
+                MATRIX_AT(output, step / output_steps, i * 3 + 1) = positions[i/BLOCK_SIZE * 3 + 1].y[i%BLOCK_SIZE];
+                MATRIX_AT(output, step / output_steps, i * 3 + 2) = positions[i/BLOCK_SIZE * 3 + 2].z[i%BLOCK_SIZE];
+            }
+        }
+    }
+
+    if (num_steps % output_steps != 0) {
+        // save positions to row 'num_outputs - 1' of the output matrix
+        for (size_t i = 0; i < n; i++) {
+            // apply a unary function to each element of the matrix
+            MATRIX_AT(output, num_outputs - 1, i * 3 + 0) = positions[i/BLOCK_SIZE * 3].x[i%BLOCK_SIZE];
+            MATRIX_AT(output, num_outputs - 1, i * 3 + 1) = positions[i/BLOCK_SIZE * 3 + 1].y[i%BLOCK_SIZE];
+            MATRIX_AT(output, num_outputs - 1, i * 3 + 2) = positions[i/BLOCK_SIZE * 3 + 2].z[i%BLOCK_SIZE];
+        }
+    }
+
 
     // get the end and computation time
     clock_gettime(CLOCK_MONOTONIC, &end);
@@ -88,9 +151,16 @@ int main(int argc, const char* argv[]) {
     printf("%f secs\n", time);
 
     // save results
-    //matrix_to_npy_path(argv[5], output);
+    matrix_to_npy_path(argv[5], output);
 
     // cleanup
+    free(positions);
+    free(velocities);
+    free(masses);
+    free(forces);
+    matrix_free(input);
+    
+
 
 
     return 0;
