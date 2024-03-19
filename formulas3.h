@@ -12,9 +12,11 @@ typedef struct {
     double y[BLOCK_SIZE];
     double z[BLOCK_SIZE];
 } Positions;
-
+// this function calculates the forces
 inline static double* calculateForces(double* forces, Positions* positions, double* masses, size_t n)
 {
+    // this is the main loop that calculates the forces
+    // for each body in the system
     for (size_t i = 0; i < n; i++)
     {
         
@@ -39,6 +41,7 @@ inline static double* calculateForces(double* forces, Positions* positions, doub
     return forces;
 }
 
+// this function calculates the velocities
 inline static Positions* calculateVelocities(Positions* velocities, double* forces, double* masses, size_t n, double time_step)
 {
     for (size_t i = 0; i < n; i++)
@@ -54,6 +57,7 @@ inline static Positions* calculateVelocities(Positions* velocities, double* forc
     return velocities;
 }
 
+// this function calculates the positions
 inline static Positions* calculatePositions(Positions* positions, Positions* velocities, size_t n, double time_step)
 {
     for (size_t i = 0; i < n; i++)

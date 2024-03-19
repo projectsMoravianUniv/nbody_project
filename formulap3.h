@@ -7,19 +7,22 @@
 #define SOFTENING 1e-9
 
 #ifndef BLOCK_SIZE
-#define BLOCK_SIZE 128
+#define BLOCK_SIZE 64
 #endif
-
+// this struct is used to store the positions of the bodies
+// This is an AoSoA (Array of Structures of Arrays) layout
 typedef struct {
     double x[BLOCK_SIZE];
     double y[BLOCK_SIZE];
     double z[BLOCK_SIZE];
 } Positions;
 
-
+// this function calculates the forces
 inline static double* calculateForces(double* forces, Positions* positions, double* masses, size_t n)
 {
-    #pragma omp for schedule(static, BLOCK_SIZE) 
+    // this is the main loop that calculates the forces
+    // for each body in the system
+    #pragma omp for schedule(dynamic, BLOCK_SIZE) 
     for (size_t i = 0; i < n; i++)
     {
         
@@ -43,10 +46,10 @@ inline static double* calculateForces(double* forces, Positions* positions, doub
     }
     return forces;
 }
-
+// this function calculates the velocities
 inline static Positions* calculateVelocities(Positions* velocities, double* forces, double* masses, size_t n, double time_step)
 {
-    #pragma omp for schedule(static, BLOCK_SIZE)
+    #pragma omp for schedule(dynamic, BLOCK_SIZE)
     for (size_t i = 0; i < n; i++)
     {
         velocities[i/BLOCK_SIZE * 3].x[i%BLOCK_SIZE] += forces[i * 3] / masses[i] * time_step;
@@ -59,10 +62,10 @@ inline static Positions* calculateVelocities(Positions* velocities, double* forc
     }
     return velocities;
 }
-
+// this function calculates the positions
 inline static Positions* calculatePositions(Positions* positions, Positions* velocities, size_t n, double time_step)
 {
-    #pragma omp for schedule(static, BLOCK_SIZE)
+    #pragma omp for schedule(dynamic, BLOCK_SIZE)
     for (size_t i = 0; i < n; i++)
     {
         positions[i/BLOCK_SIZE * 3].x[i%BLOCK_SIZE] += velocities[i/BLOCK_SIZE * 3].x[i%BLOCK_SIZE] * time_step;
