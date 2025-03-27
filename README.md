@@ -1,9 +1,5 @@
 # N-Body Problem Simulation
 
-<script type="text/javascript" src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script type="text/javascript" id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
 ## Project Overview
 
 This project implements an efficient simulation of n bodies in a 3D space under gravitational influence. The simulation follows Newton’s Law of Universal Gravitation, the Superposition Principle, and Newton’s Second Law of Motion.
@@ -13,19 +9,15 @@ This project implements an efficient simulation of n bodies in a 3D space under 
 The motion of each body is influenced by the gravitational force exerted by all other bodies. The fundamental equations used include:
 
 - **Newton’s Law of Universal Gravitation**:
-  \[
-  F_{ij} = G \frac{m_i m_j}{r_{ij}^2}
-  \]
+$$ F_{ij} = G \frac{m_i m_j}{r_{ij}^2} $$
   where:
   - \( G = 6.6743015 \times 10^{-11} \) Nm²/kg² (gravitational constant)
-  - \( r_{ij} = \sqrt{(x_j - x_i)^2 + (y_j - y_i)^2 + (z_j - z_i)^2 + \epsilon} \)
+  - $$ r_{ij} = \sqrt{(x_j - x_i)^2 + (y_j - y_i)^2 + (z_j - z_i)^2 + \epsilon} $$
     - Distance between bodies, with softening factor \( \epsilon = 10^{-9} \) to prevent division by zero.
 
 - **Superposition Principle**: The net force acting on a body is the sum of all individual gravitational forces.
-- **Newton’s Second Law**: Acceleration is determined as:
-  \[
-  a_x = \frac{F_x}{m_i}, \quad a_y = \frac{F_y}{m_i}, \quad a_z = \frac{F_z}{m_i}
-  \]
+- **Newton’s Second Law**: Acceleration is determined as:  
+$$ a_x = \frac{F_x}{m_i}, \quad a_y = \frac{F_y}{m_i}, \quad a_z = \frac{F_z}{m_i} $$
 - **Leapfrog Integration**: Used for numerical integration to update velocities and positions efficiently.
 
 ## Program Variants
