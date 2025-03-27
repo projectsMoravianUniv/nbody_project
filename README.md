@@ -1,9 +1,5 @@
 # N-Body Problem Simulation
 
-<script type="text/javascript" src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
-<script type="text/javascript" id="MathJax-script" async
-  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-
 ## Project Overview
 
 This project implements an efficient simulation of n bodies in a 3D space under gravitational influence. The simulation follows Newton’s Law of Universal Gravitation, the Superposition Principle, and Newton’s Second Law of Motion.
