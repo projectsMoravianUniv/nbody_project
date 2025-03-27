@@ -1,0 +1,45 @@
+---
+title: "Project 1 Analysis Plots"
+output:
+  html_document:
+    df_print: paged
+editor_options:
+  chunk_output_type: console
+---
+
+# Library
+```{r}
+library(tidyverse)
+```
+
+# Plots
+```{r}
+#s and p
+serial = data.frame(categories = c("serial100", "serial1000", "serial10000"), values = c(0.042883, 4.192066, 421.080992))
+
+serial %>% ggplot(aes(x = categories, y = values)) + geom_bar(stat = "identity", fill = "skyblue") + labs(title = "Serial Bar Graph", x = "Categories", y = "Values")
+
+parallel = data.frame(categories = c("parallel100", "parallel1000", "parallel10000"), values = c(0.038205, 0.497687, 8.506878))
+
+parallel %>% ggplot(aes(x = categories, y = values)) + geom_bar(stat = "identity", fill = "red") + labs(title = "Parallel Bar Graph", x = "Categories", y = "Values")
+
+parallelpercent = data.frame(categories = c("parallel100", "parallel1000", "parallel10000"), values = c(10.90875, 88.12788, 97.97975))
+
+parallelpercent %>% ggplot(aes(x = categories, y = values)) + geom_bar(stat = "identity", fill = "blue") + labs(title = "Parallelsim Percentage Bar Graph", x = "Categories", y = "Values")
+
+# s3 and p3
+serial3 = data.frame(categories = c("serial3100", "serial31000", "serial310000"), values = c(0.037075, 3.613398, 362.094913))
+
+serial3 %>% ggplot(aes(x = categories, y = values)) + geom_bar(stat = "identity", fill = "skyblue") + labs(title = "Serial3 Bar Graph", x = "Categories", y = "Values")
+
+parallel3 = data.frame(categories = c("parallel3100", "parallel31000", "parallel310000"), values = c(0.089737, 1.425298, 41.683292))
+
+parallel3 %>% ggplot(aes(x = categories, y = values)) + geom_bar(stat = "identity", fill = "red") + labs(title = "Parallel3 Bar Graph", x = "Categories", y = "Values")
+
+parallel3percent = data.frame(categories = c("parallel100", "parallel1000", "parallel10000"), values = c(-142.0418, 60.55519, 88.4883))
+
+parallel3percent %>% ggplot(aes(x = categories, y = values)) + geom_bar(stat = "identity", fill = "blue") + labs(title = "Parallelsim3 Percentage Bar Graph", x = "Categories", y = "Values")
+
+```
+
+
